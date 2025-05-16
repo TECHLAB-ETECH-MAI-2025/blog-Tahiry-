@@ -1,0 +1,46 @@
+{% extends 'base.html.twig'%}
+{% block stylesheets %}
+
+    <style>
+        body {
+            background-color: rgb(161, 176, 223);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container-custom {
+            background-color: rgb(211, 217, 219);
+        }
+        a {
+            color: rgb(214, 131, 179);
+        }
+    </style>
+ {% endblock  %} 
+
+{% block body %}
+<div class="d-flex flex-column">
+    <h1 class="text-center ">Mon Blog</h1>
+    <div class="container container-custom p-4 rounded shadow-lg">
+        <h1 class="mb-4">Liste des Articles</h1>
+
+        <a href="{{ path('app_article_new') }}" class="btn btn-primary mb-4">Nouvel Article</a>
+
+        {% if pagination is empty %}
+            <div class="alert alert-info">Aucun article trouvé</div>
+        {% else %}
+            <div class="list-group mb-4">
+                {% for article in pagination %}
+                    <a href="{{path('app_article_show',{id: article.id})}}" class="list-group-item">{{ article.title }}</a>
+                {% endfor %} 
+            </div>
+        {% endif %}
+
+        <p class="text-muted">Total : {{ pagination|length }} article(s)</p>
+        <div class="navigation">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</div>
+     {% endblock  %} 
+
