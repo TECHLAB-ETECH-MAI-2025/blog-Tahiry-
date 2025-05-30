@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Commentaire;
-use App\Form\CommentaireForm;
 use App\Form\CommentType;
 use App\Repository\CommentaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +30,9 @@ final class CommentaireController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $commentaire->setAuthor($this->getUser()); // lien avec l'utilisateur connecté
+            $commentaire->setCreatedAt(new \DateTime());
+
             $entityManager->persist($commentaire);
             $entityManager->flush();
 
@@ -69,7 +71,7 @@ final class CommentaireController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_commentaire_delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_commentaire_delete', methods: ['POST'])]
     public function delete(Request $request, Commentaire $commentaire, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$commentaire->getId(), $request->getPayload()->getString('_token'))) {

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250514094628 extends AbstractMigration
+final class Version20250519200531 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -33,13 +33,22 @@ final class Version20250514094628 extends AbstractMigration
             CREATE INDEX IDX_53A4EDAA12469DE2 ON article_category (category_id)
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE category (id SERIAL NOT NULL, name VARCHAR(75) NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE category (id SERIAL NOT NULL, name VARCHAR(75) NOT NULL, description VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE commentaire (id SERIAL NOT NULL, article_id INT DEFAULT NULL, author VARCHAR(150) NOT NULL, content TEXT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE commentaire (id SERIAL NOT NULL, author_id INT NOT NULL, article_id INT DEFAULT NULL, content TEXT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE INDEX IDX_67F068BCF675F31B ON commentaire (author_id)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_67F068BC7294869C ON commentaire (article_id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE "users" (id SERIAL NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, PRIMARY KEY(id))
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL ON "users" (email)
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE messenger_messages (id BIGSERIAL NOT NULL, body TEXT NOT NULL, headers TEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, available_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, delivered_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))
@@ -83,6 +92,9 @@ final class Version20250514094628 extends AbstractMigration
             ALTER TABLE article_category ADD CONSTRAINT FK_53A4EDAA12469DE2 FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE commentaire ADD CONSTRAINT FK_67F068BCF675F31B FOREIGN KEY (author_id) REFERENCES "users" (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE commentaire ADD CONSTRAINT FK_67F068BC7294869C FOREIGN KEY (article_id) REFERENCES article (id) NOT DEFERRABLE INITIALLY IMMEDIATE
         SQL);
     }
@@ -100,6 +112,9 @@ final class Version20250514094628 extends AbstractMigration
             ALTER TABLE article_category DROP CONSTRAINT FK_53A4EDAA12469DE2
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE commentaire DROP CONSTRAINT FK_67F068BCF675F31B
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE commentaire DROP CONSTRAINT FK_67F068BC7294869C
         SQL);
         $this->addSql(<<<'SQL'
@@ -113,6 +128,9 @@ final class Version20250514094628 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE commentaire
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE "users"
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE messenger_messages

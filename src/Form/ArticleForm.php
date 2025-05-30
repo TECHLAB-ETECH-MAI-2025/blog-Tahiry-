@@ -3,11 +3,9 @@
 namespace App\Form;
 
 use App\Entity\Article;
-use App\Entity\Category;
+use App\Entity\user;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -16,16 +14,17 @@ class ArticleForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('title',TextType::class,[
-                'label'=> 'Titre',
+            ->add('title')
+            ->add('content')
+            ->add('createdAt', null, [
+                'widget' => 'single_text',
             ])
-            ->add('content',TextareaType::class,[
-                'label'=> 'Contenues',
+            ->add('updatedAt', null, [
+                'widget' => 'single_text',
             ])
-            ->add('categories', EntityType::class, [
-                'class' => Category::class,
-                'choice_label' => 'name',
-                'multiple' => true,
+            ->add('article_user', EntityType::class, [
+                'class' => user::class,
+                'choice_label' => 'id',
             ])
         ;
     }

@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">{{ article.title }}</h2>
+                        <div>
+                            <a href="{{ path('app_article_edit', {'id': article.id}) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-4">
+                        {% if article.categories|length > 0 %}
+                            <div class="mb-3">
+                                {% for category in article.categories %}
+                                    <span class="badge bg-info">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="article-content mb-4">
+                            {{ article.content|nl2br }}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>
+                                <i class="far fa-calendar-plus"></i> Créé le {{ article.createdAt|date('d/m/Y à H:i') }}
+                            </span>
+                            {% if article.updatedAt %}
+                                <span>
+                                    <i class="fas fa-calendar-day"></i> Màj le {{ article.updatedAt|date('d/m/Y à H:i') }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('app_article_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        {{ include('article/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+            
+        
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-comments"></i> Commentaires ({{ article.commentaire|length }})
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                
+                    {% if article.commentaire|length > 0 %}
+                        <div class="list-group mb-4">
+                            {% for commentaire in article.commentaire %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <strong>{{ commentaire.author }}</strong>
+                                        <small class="text-muted">
+                                            <i class="far fa-clock"></i> {{ commentaire.createdAt|date('d/m/Y H:i') }}
+                                        </small>
+                                    </div>
+                                    <p class="mb-0">{{ commentaire.content }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle"></i> Aucun commentaire pour cet article
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Formulaire d'ajout de commentaire -->
+                    <div class="commentaire-form mt-4">
+                        <h4 class="h5 mb-3">Ajouter un commentaire</h4>
+                        {{ form_start(commentForm, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                            <div class="mb-3">
+                                {{ form_label(commentForm.author, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(commentForm.author, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(commentForm.author) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(commentForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(commentForm.content, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                                {{ form_errors(commentForm.content) }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Envoyer
+                            </button>
+                        {{ form_end(commentForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

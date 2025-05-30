@@ -1,108 +1,45 @@
+
+
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier l'article - {{ article.title|e }}{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        body {
-            background-color: rgb(10, 30, 73);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .form-container {
-            background-color: rgb(206, 215, 219);
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 600px;
-        }
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        .delete-btn {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        .delete-btn:hover {
-            background-color: #bb2d3b;
-            border-color: #b02a37;
-        }
-    </style>
-{% endblock %}
+{% block title %}Modifier Article{% endblock %}
 
 {% block body %}
-<main class="container form-container p-4">
-    <h1 class="h3 mb-4 text-center">Modifier l'article</h1>
+    <div class="container py-5"> 
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <h1 class="mb-4 text-center text-primary">Modifier l'Article</h1> 
 
-    {{ include('article/_form.html.twig', {
-        'button_label': '<i class="fas fa-save me-1"></i> Enregistrer',
-        'button_attr': {
-            'class': 'btn btn-primary w-100 py-2 mb-3'
-        }
-    }) }}
+                
+                <div class="card shadow-lg border-0 rounded-3"> 
+                    <div class="card-header bg-gradient-primary text-white text-center py-3 rounded-top-3"> 
+                        <h4 class="mb-0">Détails de l'article</h4>
+                    </div>
+                    <div class="card-body p-4">
+                       
+                        {{ include('article/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+                    </div>
+                </div>
+               
 
-    <div class="action-buttons">
-        <a href="{{ path('app_article_index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Retour à la liste
-        </a>
-        
-        <button type="button" class="btn delete-btn text-white" data-bs-toggle="modal" data-bs-target="#deleteModal" aria-controls="deleteModal">
-            <i class="fas fa-trash-alt me-1"></i> Supprimer
-        </button>
-    </div>
-</main>
+                
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top"> 
+                    
+                    {{ include('article/_delete_form.html.twig') }}
 
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmation
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer définitivement cet article ?</p>
-                <p class="fw-bold">"{{ article.title|e }}"</p>
-                <p class="text-muted small">Cette action est irréversible et supprimera également tous les commentaires associés.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Annuler
-                </button>
-                {{ include('article/_delete_form.html.twig') }}
+                   
+                    <a href="{{ path('app_category_new') }}" class="btn btn-outline-info btn-lg"> 
+                        <i class="bi bi-plus-circle me-2"></i> Nouvelles Catégories 
+                    </a>
+                </div>
+
+                <div class="text-center mt-3"> 
+                    <a href="{{ path('app_article_index') }}" class="btn btn-link text-secondary">
+                        <i class="bi bi-arrow-left me-2"></i> Retour à la liste des articles
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    <!-- Font Awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- Bootstrap Validation -->
-    <script>
-        (function () {
-            'use strict';
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        })();
-    </script>
-{% endblock %}

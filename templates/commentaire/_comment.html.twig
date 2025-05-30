@@ -1,0 +1,11 @@
+<div class="list-group-item">
+    <div class="d-flex justify-content-between mb-2">
+        <strong>{{ commentaire.author }}</strong>
+        <small class="text-muted">
+            <i class="far fa-clock"></i> {{ commentaire.createdAt|date('d/m/Y H:i') }}
+        </small>
+
+            <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}">modifier</a>
+    </div>
+    <p class="mb-0">{{ commentaire.content }}</p>
+</div>

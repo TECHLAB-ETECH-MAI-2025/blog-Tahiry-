@@ -39,13 +39,22 @@ class CommentaireRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Commentaire
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+       public function findOneBySomeField($value): ?Commentaire
+        {
+            return $this->createQueryBuilder('c')
+            ->andWhere('c.exampleField = :val')
+            ->setParameter('val', $value)
+                        ->getQuery()
+               ->getOneOrNullResult()
+            ;
+        }
+        public function deleteByArticle($article): void
+        {
+            $this->createQueryBuilder('c')
+                ->delete()
+                ->where('c.article = :article')
+                ->setParameter('article', $article)
+                ->getQuery()
+                ->execute();
+        }
 }
