@@ -1,0 +1,8 @@
+{% for message in messages %}
+    <div class="mb-2 {{ message.sender == app.user ? 'text-end' : '' }}">
+        <div class="p-2 {{ message.sender == app.user ? 'bg-primary text-white' : 'bg-light' }} rounded d-inline-block">
+            {{ message.content }}
+        </div>
+        <div class="text-muted small">{{ message.createdAt|date('H:i') }}</div>
+    </div>
+{% endfor %}

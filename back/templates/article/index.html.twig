@@ -1,0 +1,140 @@
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<style>
+        header.navbar-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color:rgb(124, 181, 214);
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            z-index: 9999;
+        }
+        .nav-link-hover {
+            text-decoration: none;
+            color: #212529;
+        }
+
+        .nav-letter {
+            display: inline-block;
+            transition: transform 0.3s ease, color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link-hover:hover .nav-letter {
+            color: #0d6efd;
+            text-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
+        }
+
+        .nav-link-hover:hover .nav-letter:nth-child(odd) {
+            transform: translateY(-3px) scale(1.2);
+        }
+
+        .nav-link-hover:hover .nav-letter:nth-child(even) {
+            transform: translateY(3px) scale(1.2);
+        }
+
+        body {
+            padding-top: 70px; 
+        }
+    </style>
+<header class="navbar-top py-3  border-bottom">
+    <div class="container d-flex justify-content-between align-items-center">
+        <strong>{{ app.user.email }}</strong>
+
+        <nav class="nav-links d-flex gap-4">
+            <a href="{{ path('chat_home') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-messenger"></i>
+                {% for l in 'messages'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+            <a href="{{ path('app_article_index') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-journal-text"></i>
+                {% for l in 'Articles'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+            <a href="{{ path('app_logout') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-box-arrow-right"></i>
+                {% for l in 'Se déconnecter'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+        </nav>
+    </div>
+</header>
+ <div class="text-center mb-4">
+    <h1 class="display-5 text-uppercase fw-bold">Liste des articles</h1>
+  </div>
+<div class="container my-4">
+  <table class="table table-striped table-bordered display responsive nowrap datatable" style="width:100%">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Contenu</th>
+        <th>Date</th>
+        <th>Commentaires</th>
+      </tr>
+    </thead>
+  </table>
+</div>  
+<div class="row mt-4">
+    <div class="col text-center"> 
+        <a href="{{ path('app_article_new') }}" class="btn btn-outline-secondary">
+            Créer un nouvel article
+        </a>
+    </div>
+</div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  $('.datatable').DataTable({
+    ajax: '{{ path('api_articles') }}',
+    processing: true,
+    serverSide: true,
+    responsive: true,
+    pageLength: 4, 
+    columns: [
+      { data: 'id' },
+      { data: 'title' },          
+      { data: 'content' },        
+      { data: 'createdAt' },      
+      { data: 'commentCount' }    
+    ],
+    columnDefs: [
+      {
+        targets: 2,
+        render: function(data) {
+          return data.length > 50 ? data.substr(0, 50) + '...' : data;
+        }
+      },
+      {
+        targets: 3,
+        render: function(data) {
+          return new Date(data).toLocaleDateString();
+        }
+      }
+    ],
+    language: {
+      url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+    }
+  });
+});
+</script>

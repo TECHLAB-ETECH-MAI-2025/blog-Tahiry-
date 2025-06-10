@@ -1,0 +1,240 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}message{% endblock %}
+
+{% block stylesheets %}
+<style>
+    #chat-container {
+        display: flex;
+        height: 90vh;
+    }
+    #chat-sidebar {
+        width: 30%;
+        border-right: 1px solid #ccc;
+        overflow-y: auto;
+    }
+    #chat-main {
+        width: 70%;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    .chat-user {
+        cursor: pointer;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .chat-user:hover {
+        background-color: #f5f5f5;
+    }
+    .unread-badge {
+        background: #0d6efd;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+    textarea.form-control {
+       
+    }
+     html, body {
+            overflow-x: hidden;
+        }
+
+        #chat-messages {
+            scrollbar-width: thin;
+        }
+
+        #chat-form textarea {
+            resize:none;
+             overflow: hidden;
+            height: auto;
+            min-height: 38px;
+            max-block-size: 38px;
+        }
+    
+</style>
+{% endblock %}
+
+{% block body %}
+
+<button class="btn btn-outline-secondary m-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+    ☰
+</button>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="sidebarMenuLabel">Menu</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="list-group">
+      <li class="list-group-item">
+        <a href="{{ path('app_index') }}">🏠 Accueil</a>
+      </li>
+      <li class= "list-group-item">
+            <a href="{{ path('app_article_index') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-journal-text"></i>
+                {% for l in 'Articles'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+      </li>
+      <li class="list-group-item">
+        <a href="{{ path('app_logout') }}">🔓 Se déconnecter</a>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+
+
+
+<div class="container-fluid mt-3">
+    <div id="chat-container">
+        <!-- Sidebar -->
+        <div id="chat-sidebar">
+            <div class="d-flex justify-content-between align-items-center p-2">
+                <strong>Discussions</strong>
+                <button class="btn btn-sm btn-success" onclick="toggleNewChat()">+</button>
+            </div>
+            <div id="discussion-list">
+                {% for discussion in discussions %}
+                    {% set user = discussion.sender == app.user ? discussion.receiver : discussion.sender %}
+                    <div class="chat-user" onclick="loadConversation({{ user.id }})">
+                        {{ user.email }}
+                        {% if discussion.unread > 0 %}
+                            <span class="unread-badge float-end">{{ discussion.unread }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="new-chat-list" style="display: none;">
+                <hr>
+                <h6 class="text-center">Nouveau Chat</h6>
+                {% for user in otherUsers %}
+                    {% if user != app.user %}
+                        <div class="chat-user" onclick="loadConversation({{ user.id }})">{{ user.email }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat Main -->
+        <div id="chat-main">
+            <p class="text-muted">Sélectionnez une discussion à gauche.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    let currentReceiverId = null;
+
+    function toggleNewChat() {
+        const el = document.getElementById('new-chat-list');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function loadConversation(receiverId) {
+        currentReceiverId = receiverId;
+
+        fetch(`/chat/conversation/${receiverId}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('chat-main').innerHTML = html;
+                scrollToBottom();
+
+                const form = document.getElementById('chat-form');
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+
+                    fetch(`/chat/conversation/${receiverId}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(() => {
+                        form.reset();
+                        updateMessages();
+                    });
+                });
+            });
+            
+    const discussionUserEl = document.querySelector(`.chat-user[onclick="loadConversation(${receiverId})"]`);
+        if (discussionUserEl) {
+    const badge = discussionUserEl.querySelector('.unread-badge');
+        if (badge) {
+        badge.remove();
+    }
+    }
+
+    }
+
+    function updateMessages() {
+        if (!currentReceiverId) return;
+
+        fetch(`/chat/messages/${currentReceiverId}`)
+            .then(res => res.text())
+            .then(html => {
+                const container = document.getElementById('chat-messages');
+                if (container) {
+                    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+                    container.innerHTML = html;
+                    if (isAtBottom) scrollToBottom();
+                }
+            });
+    }
+
+    function scrollToBottom() {
+        const container = document.getElementById('chat-messages');
+        if (container) container.scrollTop = container.scrollHeight;
+    }
+
+    const userId = {{ app.user.id }};
+
+    const eventSource = new EventSource(`http://localhost:3000/.well-known/mercure?topic=${encodeURIComponent('/chat/' + userId)}`);
+
+          eventSource.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+
+    
+        if (parseInt(currentReceiverId) === parseInt(data.sender_id)) {
+
+        const container = document.getElementById('chat-messages');
+             if (container) {
+                            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+                            const div = document.createElement('div');
+                             div.classList.add('message', 'incoming-message');
+                            div.innerText = data.content;
+                            container.appendChild(div);
+
+                             if (isAtBottom) scrollToBottom();
+                            }
+
+                            } else {
+                                console.log('Nouveau message reçu de ' + data.sender_id);
+
+                                const userBox = document.querySelector(`.chat-user[onclick="loadConversation(${data.sender_id})"]`);
+                            if (userBox) {
+
+                              let badge = userBox.querySelector('.unread-badge');
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.classList.add('unread-badge');
+                                badge.textContent = '●';
+                                badge.style.color = 'red';
+                                userBox.appendChild(badge);
+                            }
+                            }
+                            }
+
+    };
+
+
+    //setInterval(updateMessages, 2000);
+</script>
+{% endblock %} 

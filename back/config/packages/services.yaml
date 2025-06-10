@@ -1,0 +1,10 @@
+parameters:
+    mercure_jwt_secret: '%env(MERCURE_JWT_SECRET)%'
+
+services:
+    App\Service\MercureJwtGenerator:
+        arguments:
+            $mercureSecret: '%mercure_jwt_secret%'
+    App\EventListener\MercureCookieListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response }

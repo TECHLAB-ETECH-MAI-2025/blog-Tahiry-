@@ -1,0 +1,371 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    
+    <style>
+        header.navbar-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color:rgb(223, 214, 202);
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            z-index: 9999;
+        }
+        .nav-link-hover {
+            text-decoration: none;
+            color: #212529;
+        }
+
+        .nav-letter {
+            display: inline-block;
+            transition: transform 0.3s ease, color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link-hover:hover .nav-letter {
+            color: #0d6efd;
+            text-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
+        }
+
+        .nav-link-hover:hover .nav-letter:nth-child(odd) {
+            transform: translateY(-3px) scale(1.2);
+        }
+
+        .nav-link-hover:hover .nav-letter:nth-child(even) {
+            transform: translateY(3px) scale(1.2);
+        }
+
+        body {
+            padding-top: 70px; 
+        }
+    </style>
+{% endblock %}
+
+{% block body %} 
+<header class="navbar-top py-3  border-bottom">
+    <div class="container d-flex justify-content-between align-items-center">
+        <strong>{{ app.user.email }}</strong>
+
+        <nav class="nav-links d-flex gap-4">
+            <a href="{{ path('chat_home') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-messenger"></i>
+                {% for l in 'messages'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+            <a href="{{ path('app_article_index') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-journal-text"></i>
+                {% for l in 'Articles'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+            <a href="{{ path('app_logout') }}" class="nav-link-hover d-inline-flex align-items-center gap-1">
+                <i class="bi bi-box-arrow-right"></i>
+                {% for l in 'Se déconnecter'|split('') %}
+                    <span class="nav-letter">{{ l }}</span>
+                {% endfor %}
+            </a>
+        </nav>
+    </div>
+</header>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">{{ article.title }}</h2>
+                        <div>
+                            <a href="{{ path('app_article_edit', {'id': article.id}) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-4">
+                        {% if article.categories|length > 0 %}
+                            <div class="mb-3">
+                                {% for category in article.categories %}
+                                    <span class="badge bg-info">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="article-content mb-4">
+                            {{ article.content|nl2br }}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>
+                                <i class="far fa-calendar-plus"></i> Créé le {{ article.createdAt|date('d/m/Y à H:i') }}
+                            </span>
+                            {% if article.updatedAt %}
+                                <span>
+                                    <i class="fas fa-calendar-day"></i> Màj le {{ article.updatedAt|date('d/m/Y à H:i') }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="like-section mb-3">
+                        {% if app.user %}
+                            <button id="like-button" 
+                                    class="btn {{ is_liked ? 'btn-danger' : 'btn-outline-danger' }}"
+                                    data-article-id="{{ article.id }}">
+                                <span id="like-icon">🤍</span> 
+                                <span id="like-text">{{ is_liked ? "Aimé" : "j'aime" }}</span> 
+                                (<span id="like-count">{{ likesCount }}</span>)
+                            </button>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <a href="{{ path('app_login') }}">Connectez-vous</a> pour aimer cet article ({{ article.likeCount }} j'aime)
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('app_article_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        <a href="{{ path('app_article_new') }}" class="btn btn-outline-secondary">
+                         créer un nouveau article
+                        </a>
+                        
+                         {{ include('article/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-comments"></i> Commentaires ({{ article.commentaire|length }})
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                    {% if article.commentaire|length > 0 %}
+                        <div id="comment-list" class="list-group mb-4">
+                            {% for commentaire in article.commentaire %}
+                                {{ include('commentaire/_comment.html.twig', {'commentaire': commentaire}) }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle"></i> Aucun commentaire pour cet article
+                        </div>
+                    {% endif %}
+                    
+                    
+                    {% if app.user %}
+                        <div class="commentaire-form mt-4">
+                            <h4 class="h5 mb-3">Ajouter un commentaire</h4>
+                            {{ form_start(commentForm, {attr: {'class': 'needs-validation', 'novalidate': 'novalidate', id: 'comment-form', action: path('api_comment_add', {'id': article.id })  }}) }}
+                            
+                                <div class="mb-3">
+
+                                    {{ form_label(commentForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(commentForm.content, {attr: {'class': 'form-control', 'rows': 3}}) }}
+                                    {{ form_errors(commentForm.content) }}
+        
+                                </div>
+                                <button id="comment-send" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Envoyer
+                                </button>
+                            {{ form_end(commentForm) }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <a href="{{ path('app_login') }}">Connectez-vous</a> pour ajouter un commentaire.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const likeButton = document.getElementById('like-button');
+            
+            if (likeButton) {
+
+                likeButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleLike();
+                });
+            }
+                    
+            function toggleLike() {
+                const articleId = likeButton.dataset.articleId;
+                
+                likeButton.disabled = true;
+                
+                fetch(`/api/articles/${articleId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { 
+                            throw new Error(err.error || `HTTP error! status: ${response.status}`); 
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        updateLikeButton(data.liked, data.likesCount);
+                        
+                    } 
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+                .finally(() => {
+                    likeButton.disabled = false;
+                });
+            }
+            
+            function updateLikeButton(liked, count) {
+                const likeIcon = document.getElementById('like-icon');
+                const likeText = document.getElementById('like-text');
+                const likeCount = document.getElementById('like-count');
+                
+                if (likeCount) likeCount.textContent = count;
+                
+                if (liked) {
+                    likeButton.classList.remove('btn-outline-danger');
+                    likeButton.classList.add('btn-danger');
+                    if (likeIcon) likeIcon.textContent = '❤️';
+                    if (likeText) likeText.textContent = 'Aimé';
+                } else {
+                    likeButton.classList.remove('btn-danger');
+                    likeButton.classList.add('btn-outline-danger');
+                    if (likeIcon) likeIcon.textContent = '🤍';
+                    if (likeText) likeText.textContent = 'J\'aime';
+                }
+            }
+            
+            function showFeedback(message, type = 'success') {
+                const feedback = document.createElement('div');
+                feedback.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+                feedback.style.top = '20px';
+                feedback.style.right = '20px';
+                feedback.style.zIndex = '9999';
+                feedback.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `   ;
+                document.body.appendChild(feedback);
+            }
+
+        const articleId = {{ article.id }};
+            const commentForm = document.querySelector('.commentaire-form form');
+            const commentsContainer = document.querySelector('.list-group');
+
+            
+            const addCommentToDOM = (comment) => {
+                const commentHtml = `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>${comment.author}</strong>
+                            <small class="text-muted">
+                                <i class="far fa-clock"></i> ${new Date(comment.createdAt).toLocaleString()}
+                            </small>
+                        </div>
+                        <p class="mb-0">${comment.content}</p>
+                    </div>
+                `;
+                if (commentsContainer) {
+                    commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
+                    updateCommentCount(1);
+                }
+            };
+
+           
+            const updateCommentCount = (increment) => {
+                const commentTitle = document.querySelector('.card-header.bg-light h3');
+                if (commentTitle) {
+                    const currentText = commentTitle.textContent;
+                    const newCount = parseInt(currentText.match(/\((\d+)\)/)[1] || 0) + increment;
+                    commentTitle.textContent = currentText.replace(/\(\d+\)/, `(${newCount})`);
+                }
+            };            
+
+            document.getElementById("comment-form").addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const commentSend = document.getElementById('comment-send');
+                commentSend.disabled = true;                
+
+                try {
+                    const response = await fetch(document.getElementById("comment-form").getAttribute('action'), {
+                        method: 'POST',
+                        body: new FormData(commentForm),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Erreur lors de l\'envoi du commentaire');
+                    }
+                    const data = await response.json();
+                    if (data.commentHtml) {
+                        document.getElementById('comment-list').innerHTML += data.commentHtml;
+                        commentForm.reset();
+                    } else {
+                        throw new Error('Commentaire non créé');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                } finally {
+                    commentSend.disabled = false;
+                }
+            });
+
+            
+            const initMercure = () => {
+                const mercureUrl = "{{ mercure_public_url|default('') }}";
+                if (!mercureUrl) return;
+
+                const topic = `article-comments-${articleId}`;
+                const eventSource = new EventSource(`${mercureUrl}?topic=${encodeURIComponent(topic)}`);
+
+                eventSource.onmessage = (e) => {
+                    const comment = JSON.parse(e.data);
+                    if (!document.querySelector(`[data-comment-id="${comment.id}"]`)) {
+                        addCommentToDOM(comment);
+                    }
+                };
+            };
+
+           
+            fetch(`/api/comments/article/${articleId}`)
+                .then(r => r.json())
+                .then(comments => comments.forEach(addCommentToDOM))
+                .finally(initMercure);
+        });
+    </script>
+{% endblock %}

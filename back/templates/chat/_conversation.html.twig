@@ -1,0 +1,18 @@
+<h2>@{{ receiver.email }}</h2>
+
+<div id="chat-messages" style="max-height: calc(100vh - 200px); overflow-y: auto; padding-right: 10px;">
+    {% include 'chat/_messages.html.twig' %}
+</div>
+
+<div style="position: sticky; bottom: 0; background: white; padding-top: 10px;">
+    <form id="chat-form" class="d-flex gap-2 align-items-end">
+        {{ form_start(form, {'attr': {'class': 'w-100 d-flex'}}) }}
+            <div class="flex-grow-1">
+                {{ form_widget(form.content, {'attr': {'rows': 2, 'class': 'form-control', 'placeholder': 'Écrivez votre message ici...'}}) }}
+            </div>
+            <div>
+                <button class="btn btn-primary" style="height: 100%;">Envoyer</button>
+            </div>
+        {{ form_end(form) }}
+    </form>
+</div>
